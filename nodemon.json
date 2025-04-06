@@ -1,0 +1,9 @@
+{
+    "verebose": false,
+    "events": {
+        "restart": "clear"
+    },
+    "ignore": [
+        "public"
+    ]
+}

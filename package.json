@@ -1,0 +1,19 @@
+{
+  "name": "rss-feed",
+  "version": "1.0.0",
+  "description": "",
+  "type": "module",
+  "main": "app.js",
+  "scripts": {
+    "start": "clear && nodemon app.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "packageManager": "pnpm@10.7.0",
+  "dependencies": {
+    "express": "^5.1.0",
+    "rss-parser": "^3.13.0"
+  }
+}
