@@ -14,6 +14,8 @@ $heading-color: #fff;
 $heading-color-dark: #222;
 $subheading-color: #aaa;
 
+
+
 // Genel stil
 * {
   box-sizing: border-box;
@@ -73,13 +75,15 @@ body {
     height: 100%;
     background: $hover-color;
     border-right: 2px solid $secondary-color;
+    display: flex;
+    flex-direction: column;
 
     #left-list-content {
       display: flex;
       align-items: flex-start;
       justify-content: flex-start;
       flex-direction: column;
-      gap: 5px;
+      height: 100%;
 
       #list-item {
         display: flex;
@@ -225,6 +229,11 @@ body {
     display: flex;
     flex-direction: column-reverse;
     gap: 5px;
+  }
+  #date {
+    padding: 5px;
+    margin-top: 20px;
+    font-size: 1.2rem;
   }
 
   &.active {

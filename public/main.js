@@ -34,6 +34,7 @@ client.rss.full = async () => {
         });
     });
     document.querySelectorAll("#list-item")[selectedrssid].onclick();
+    document.querySelector("#rss-container #left-list #head").innerHTML = `Son Tarama: ${getFormattedTime()}`;
     return client.rss.data = data;
 }
 
@@ -102,27 +103,27 @@ client.rss.control = async function () {
         // Yeni öğeleri işleme al
         newItems.forEach(newItem => {
             const { feed, index, id } = newItem;
-            console.log(newItem);
             // Feed'in DOM elemanını kırmızı yap
             const listItems = document.querySelectorAll("#list-item");
             if (listItems[feed]) {
                 listItems[feed].style.background = "#f00";
-                listItems[feed].style.color = "#fff";
+                listItems[feed].querySelector("button").style.color = "!important #fff";
             }
 
             // Bildirimler alanına yeni öğeyi ekle
-            document.getElementById("notification-list-content").innerHTML += `<div id="notify-item"><span id="date">${getFormattedTime()}</span><a href="${id}" target="_blank">${id}</a></div>`;
+            document.getElementById("notification-list-content").innerHTML += `<div id="notify-item"><a href="${id}" target="_blank">${id}</a></div>`;
         });
+        document.getElementById("notification-list-content").innerHTML += `<span id="date">${getFormattedTime()}</span>`;
+
 
         // Bildirim sayısını güncelle
         document.getElementById("open-notification").innerText = `Bildirim Listesi (${document.querySelectorAll("#notification-list-content a").length})`;
-
+        document.title = `**Bildirim Geldi**`;
         return {
             changed: true,
             newItems: newItems // Sadece yeni eklenen öğeleri döndür
         };
     }
-    document.querySelector("#rss-container #left-list #head").innerHTML = `Son Tarama: ${getFormattedTime()}`;
     return { changed: false };
 };
 
@@ -199,13 +200,6 @@ document.getElementById("open-notification").onclick = function () {
 };
 
 
-
-// Sayfa yenilenmesi engelleniyor
-window.onbeforeunload = function (event) {
-    event.returnValue = 'Sayfayı yenilerseniz, veriler kaybolabilir. Devam etmek istiyor musunuz?';
-    return 'Sayfayı yenilerseniz, veriler kaybolabilir. Devam etmek istiyor musunuz?';
-};
-
 // Gönderildiği saati eklemek için formatlı bir tarih fonksiyonu kullanabiliriz
 function getFormattedTime() {
     const now = new Date();
@@ -219,3 +213,11 @@ function isValidUrl(url) {
     const pattern = new RegExp('^(https?:\\/\\/)?.+', 'i');
     return pattern.test(url);
 }
+
+document.addEventListener("visibilitychange", () => document.title = (document.hidden) ? "--Sayfa arka planda--":"RSS Live");
+
+
+window.onbeforeunload = function (event) {
+    event.returnValue = 'Sayfayı yenilerseniz, veriler kaybolabilir. Devam etmek istiyor musunuz?';
+    return 'Sayfayı yenilerseniz, veriler kaybolabilir. Devam etmek istiyor musunuz?';
+};
