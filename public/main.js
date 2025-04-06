@@ -80,7 +80,7 @@ client.rss.control = async function () {
                 // Eğer fark 5 dakikadan (300.000 ms) fazla ise, bu öğeyi dikkate alma
                 if (timeDifference <= 600000) {
                     // Yeni öğe bulundu ve eski verilerden gelmiyor
-                    newItems.push({
+                    newItems.unshift({
                         feed: feedIndex,
                         index: itemIndex,
                         id: currentItem.id,

@@ -47,7 +47,7 @@ body {
   #head {
     display: block;
     width: 100%;
-    padding: 2px;
+    padding: 5px;
     border-bottom: 1px solid $secondary-color;
     font-size: 1rem;
     color: $heading-color-dark;
@@ -217,6 +217,7 @@ body {
   visibility: hidden;
   opacity: 0;
   transform: translateX(100%);
+  overflow: auto;
   #head {
     margin: 10px 0;
   }

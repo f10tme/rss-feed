@@ -31,7 +31,7 @@ body {
 #rss-container #head {
   display: block;
   width: 100%;
-  padding: 2px;
+  padding: 5px;
   border-bottom: 1px solid #222;
   font-size: 1rem;
   color: #222;
@@ -199,6 +199,7 @@ body {
   visibility: hidden;
   opacity: 0;
   transform: translateX(100%);
+  overflow: auto;
 }
 
 #notification-container #head {
