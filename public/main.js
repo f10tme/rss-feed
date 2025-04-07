@@ -1,223 +1,298 @@
-const client = { rss: {} };
-let selectedrssid = 0;
-client.rss.full = async () => {
-    const data = await (await fetch("/rss/full", { cache: "no-store" })).json();
-    document.getElementById("left-list-content").innerHTML = "";
-    data.forEach(e => {
-        const imageUrl = (e.image && e.image.url && isValidUrl(e.image.url)) ? e.image.url : 'null-icon.png'
-        const imageAlt = (e.image && e.image.title) || 'No Image';
-        let item = `
-        <div id="list-item">
-            <div id="image-box" title="${imageAlt}"><img src="${imageUrl}" alt="${imageAlt}" onerror="this.onerror=null; this.src='null-icon.png';"/></div>
-            <button id="button-title" title="${e.link}">${e.title}</button>
-        </div>
-        `;
-        document.getElementById("left-list-content").innerHTML += item;
+const rssContainer = document.getElementById("rss-container");
+const sourceList = document.getElementById("source-list");
+const sourceListContent = sourceList.querySelector("#source-list-content");
+const feedList = document.getElementById("feed-list");
+const feedListContent = feedList.querySelector("#feed-list-content");
+const notificationList = document.getElementById("notification-list");
+const notificationListContent = notificationList.querySelector("#notification-list-content");
+const notificationControButton = document.getElementById("notification-control-button");
+
+let rss = {
+    config: {
+        lastData: null,
+        previousData: null,
+        selectedSource: null,
+    },
+    tool: {
+        elapsedTime: null,
+        dateNewest: null,
+        getTime: null,
+    },
+    api: null,
+    sourceListItemCreate: null,
+    feedListItemCreate: null,
+    notificationListItemNotifyCreate: null,
+    notificationListItemCreate: null,
+    notify: null,
+    sourceWrite: null,
+    control: null,
+};
+
+// ANCHOR: Elapsed Time
+rss.tool.elapsedTime = function (date) {
+    const d = new Date(date), now = new Date();
+    const diff = now - d;
+
+    if (diff < 0) return "Hatalı Tarih (Gelecek)";
+
+    const mins = diff / 60000, hrs = diff / 3600000, days = diff / 86400000, weeks = days / 7;
+
+    return mins < 1 ? "Az önce" :
+        mins < 60 ? `${Math.floor(mins)} dakika önce` :
+            hrs < 24 ? `${Math.floor(hrs)} saat önce` :
+                days < 7 ? `${Math.floor(days)} gün önce` :
+                    weeks < 4 ? `${Math.floor(weeks)} hafta önce` :
+                        d.toLocaleString('tr-TR');
+};
+
+// ANCHOR: Date Newest
+rss.tool.dateNewest = function (items) {
+    return items.sort((a, b) => {
+        const dateA = new Date(a.isoDate || a.pubDate);
+        const dateB = new Date(b.isoDate || b.pubDate);
+        return dateB - dateA; // Büyük olan (yeni tarih) önce gelsin
     });
-    document.querySelectorAll("#list-item").forEach((e, len) => e.onclick = () => {
-        selectedrssid = len;
-        document.querySelectorAll("#list-item").forEach((e, len) => e.removeAttribute("style"));
-        e.style.background = "#aaa";
-        e.style.color = "#fff";
-        document.querySelector("#center-list #head").innerHTML = data[len].title;
-        document.getElementById("center-list-content").innerHTML = "";
-        data[len].items.sort((a, b) => new Date(b.pubDate) - new Date(a.pubDate));
-        data[len].items.forEach((e, len) => {
-            let item = `
-            <div id="news-list-item">
-            <b id="heading">${e.title}</b>
-            <span id="description">${e.content}</span>
-            <span id="pub-date">${timeAgo(e.pubDate)}</span>
-            <a id="home-open-link" href="${e.link || e.guid}" target="_blank">Haberi Aç</a>
-            </div>`;
-            document.getElementById("center-list-content").innerHTML += item;
-        });
-    });
-    document.querySelectorAll("#list-item")[selectedrssid].onclick();
-    document.querySelector("#rss-container #left-list #head").innerHTML = `Son Tarama: ${getFormattedTime()}`;
-    return client.rss.data = data;
 }
 
+// ANCHOR: Get Time
+rss.tool.getTime = function () {
+    return new Date().toLocaleTimeString('tr-TR', { hour12: false });
+}
 
-let previousIds = []; // Önceki tüm feed'lerin link/guid listeleri burada tutulacak
+// ANCHOR: Is Valid Url
+rss.tool.isValidUrl = function (url) {
+    return url.test(new RegExp('^(https?:\\/\\/)?.+', 'i'));
+}
 
-client.rss.control = async function () {
-    // Güncel veriyi al
-    const currentData = await client.rss.full();  // Beklemek için `await` kullanıyoruz
+// ANCHOR: Get Full Data Api
+rss.api = async function () {
+    rss.config.lastData = await (await fetch("/rss/full", { cache: "no-store" })).json();
+    return rss.config.lastData;
+};
 
-    // Feed bazında link veya guid dizileri oluştur
-    const currentIds = currentData.map(feed =>
-        (feed.items || []).map(item => ({
-            id: item.link || item.guid || "",
-            pubDate: new Date(item.pubDate)  // Zaman damgası
-        }))
-    );
-
-    // İlk defa çalışıyorsa önceki datayı doldurup çık
-    if (previousIds.length === 0) {
-        previousIds = JSON.parse(JSON.stringify(currentIds)); // Derin kopya
-        return { changed: false };
-    }
-
-    let newItems = []; // Yeni eklenen öğeleri tutacak array
-    const currentTime = new Date(); // Şu anki zamanı alıyoruz
-
-    // Her feed ve içindeki id'leri (link veya guid) kontrol et
-    for (let feedIndex = 0; feedIndex < currentIds.length; feedIndex++) {
-        const ids = currentIds[feedIndex];
-
-        // Feed için id'leri kontrol et
-        for (let itemIndex = 0; itemIndex < ids.length; itemIndex++) {
-            const currentItem = ids[itemIndex];
-
-            // Eğer bu öğe önceki verilerde yoksa ve en yeni öğe ise (başta eklenen)
-            if (
-                !previousIds[feedIndex] ||
-                !previousIds[feedIndex].some(item => item.id === currentItem.id)  // Önceden var olmayan id
-            ) {
-                // Şu anki zamanla yayın tarihi arasındaki farkı hesapla (milisaniye cinsinden)
-                const timeDifference = currentTime - currentItem.pubDate;
-
-                // Eğer fark 5 dakikadan (300.000 ms) fazla ise, bu öğeyi dikkate alma
-                if (timeDifference <= 600000) {
-                    // Yeni öğe bulundu ve eski verilerden gelmiyor
-                    newItems.unshift({
-                        feed: feedIndex,
-                        index: itemIndex,
-                        id: currentItem.id,
-                        pubDate: currentItem.pubDate
-                    });
-                }
-            }
+// ANCHOR: Source List Item Create
+rss.sourceListItemCreate = function (info, image, sourceName, clickEvent) {
+    const config = {
+        info: info || "Başlık Bulunamadı",
+        image: image || "null-icon.png",
+        errorImage: "null-icon.png",
+        sourceName: sourceName || "<i>Tespit Edilemedi</i>",
+        clickEvent: clickEvent || function () {
+            alert("Butona Tıkladınız!");
         }
     }
 
-    // Yeni öğeler varsa, önbelleği güncelle
-    if (newItems.length > 0) {
-        // Yeni öğeleri sıralayarak başa ekleyelim
-        newItems.sort((a, b) => b.pubDate - a.pubDate); // En yeni öğe en üstte olacak
-
-        // Önceki veriyi güncelle
-        previousIds = JSON.parse(JSON.stringify(currentIds)); // Derin kopya
-
-        // Yeni öğeleri işleme al
-        newItems.forEach(newItem => {
-            const { feed, index, id } = newItem;
-            // Feed'in DOM elemanını kırmızı yap
-            const listItems = document.querySelectorAll("#list-item");
-            if (listItems[feed]) {
-                listItems[feed].style.background = "#f00";
-                listItems[feed].querySelector("button").style.color = "!important #fff";
+    const sourceListItem = {
+        element: document.createElement("div"),
+        imageBox: document.createElement("div"),
+        image: document.createElement("img"),
+        sourceName: document.createElement("span"),
+        init(config) {
+            this.element.setAttribute("id", "source-list-item");
+            this.element.setAttribute("title", config.info);
+            this.element["source_url"] = config.info;
+            this.element.onclick = function (...args) {
+                config.clickEvent(sourceListItem.element, ...args);
             }
-
-            // Bildirimler alanına yeni öğeyi ekle
-            document.getElementById("notification-list-content").innerHTML += `<div id="notify-item"><a href="${id}" target="_blank">${id}</a></div>`;
-        });
-        document.getElementById("notification-list-content").innerHTML += `<span id="date">${getFormattedTime()}</span>`;
-
-
-        // Bildirim sayısını güncelle
-        document.getElementById("open-notification").innerText = `Bildirim Listesi (${document.querySelectorAll("#notification-list-content a").length})`;
-        document.title = `**Bildirim Geldi**`;
-        return {
-            changed: true,
-            newItems: newItems // Sadece yeni eklenen öğeleri döndür
-        };
+            this.imageBox.setAttribute("id", "image-box");
+            this.image.alt = config.info;
+            this.image.src = config.image;
+            this.image.onerror = () => {
+                this.image.src = config.errorImage;
+            };
+            this.sourceName.setAttribute("id", "source-name");
+            this.sourceName.innerHTML = config.sourceName;
+            this.element.appendChild(this.imageBox);
+            this.imageBox.appendChild(this.image);
+            this.element.appendChild(this.sourceName);
+        },
     }
-    return { changed: false };
+    sourceListItem.init(config);
+    return { ...sourceListItem };
 };
 
-client.rss.control();
-
-
-
-
-let notify = new Audio('notify.mp3');
-setInterval(async () => {
-    let control = await client.rss.control();
-    if (control.changed) {
-        notify.play();
+// ANCHOR: feed List Item Create
+rss.feedListItemCreate = function (heading, description, elapsedTime, buttonLink, buttonText) {
+    const config = {
+        heading: heading || "Başlık Bulunamadı",
+        description: description || "Açıklama Bulunamadı",
+        elapsedTime: elapsedTime || "Geçen Zaman Bulunamadı",
+        buttonLink: buttonLink || "#nonebuttonlink",
+        buttonText: buttonText || "Buton Metni Bulunamadı"
     }
-}, 60000);
 
-
-function timeAgo(dateStr) {
-    // Geçmiş tarih dizesini Date objesine çeviriyoruz
-    const pastDate = new Date(dateStr);
-
-    // Mevcut zamanı alıyoruz
-    const now = new Date();
-
-    // İki tarih arasındaki farkı milisaniye cinsinden hesaplıyoruz
-    const diffInMilliseconds = now - pastDate;
-
-    // Milisaniyeyi dakika, saat, gün cinsine çeviriyoruz
-    const diffInMinutes = Math.floor(diffInMilliseconds / (1000 * 60)); // Milisaniye -> Dakika
-    const diffInHours = Math.floor(diffInMilliseconds / (1000 * 60 * 60)); // Milisaniye -> Saat
-    const diffInDays = Math.floor(diffInMilliseconds / (1000 * 60 * 60 * 24)); // Milisaniye -> Gün
-    const diffInWeeks = Math.floor(diffInDays / 7); // Gün -> Hafta
-
-    // Zaman dilimini döndürüyoruz
-    if (diffInMinutes < 1) {
-        return "Az önce";
-    } else if (diffInMinutes < 60) {
-        return `${diffInMinutes} dakika önce`;
-    } else if (diffInHours < 24) {
-        return `${diffInHours} saat önce`;
-    } else if (diffInDays < 7) {
-        return `${diffInDays} gün önce`;
-    } else if (diffInWeeks < 4) {
-        return `${diffInWeeks} hafta önce`;
-    } else {
-        return pastDate.toLocaleString('tr-TR');
+    const feedListItem = {
+        element: document.createElement("div"),
+        heading: document.createElement("b"),
+        description: document.createElement("span"),
+        elapsedTime: document.createElement("span"),
+        openButton: document.createElement("a"),
+        init(config) {
+            this.element.setAttribute("id", "feed-list-item");
+            this.heading.setAttribute("id", "heading");
+            this.heading.innerHTML = config.heading;
+            this.description.setAttribute("id", "description");
+            this.description.innerHTML = config.description;
+            this.elapsedTime.setAttribute("id", "elapsed-time");
+            this.elapsedTime.innerHTML = config.elapsedTime;
+            this.openButton.setAttribute("id", "open-button");
+            this.openButton.setAttribute("href", config.buttonLink);
+            this.openButton.setAttribute("target", "_blank");
+            this.openButton.innerHTML = config.buttonText;
+            this.element.appendChild(this.heading);
+            this.element.appendChild(this.description);
+            this.element.appendChild(this.elapsedTime);
+            this.element.appendChild(this.openButton);
+        },
     }
-}
+    feedListItem.init(config);
+    return { ...feedListItem };
+};
 
+// ANCHOR: Notification List Item Notify Create
+rss.notificationListItemNotifyCreate = function (heading, buttonLink, buttonText) {
+    const config = {
+        heading: heading || "Başlık Bulunamadı",
+        buttonLink: buttonLink || "#nonebuttonlink",
+        buttonText: buttonText || "Buton Metni Bulunamadı"
+    }
 
+    const notificationListItemNotify = {
+        element: document.createElement("div"),
+        heading: document.createElement("span"),
+        openButton: document.createElement("a"),
+        init(config) {
+            this.element.setAttribute("id", "notify");
+            this.heading.setAttribute("id", "heading");
+            this.heading.innerHTML = config.heading;
+            this.openButton.setAttribute("id", "open-button");
+            this.openButton.setAttribute("href", config.buttonLink);
+            this.openButton.setAttribute("target", "_blank");
+            this.openButton.innerHTML = config.buttonText;
+            this.element.appendChild(this.heading);
+            this.element.appendChild(this.openButton);
+        }
+    }
+    notificationListItemNotify.init(config);
+    return { ...notificationListItemNotify }
+};
 
-function convertTurkey(dateStr) {
+// ANCHOR: Notification List Item Create
+rss.notificationListItemCreate = function (shareTime, notificationData) {
+    const config = {
+        shareTime: shareTime || "Tarih Bulunamadı",
+        notificationData: notificationData || [],
+    }
 
-    const date = new Date(dateStr);
+    const notificationListItem = {
+        element: document.createElement("div"),
+        shareTime: document.createElement("span"),
+        init(config) {
+            this.element.setAttribute("id", "notification-list-item");
+            this.shareTime.setAttribute("id", "share-time");
+            this.shareTime.innerHTML = config.shareTime;
+            this.element.appendChild(this.shareTime);
+            config.notificationData.forEach((event, length) => {
+                notificationListItem.element.appendChild(rss.notificationListItemNotifyCreate(event?.heading, event?.buttonLink, event?.buttonText).element);
+            });
+        }
+    }
 
-    const formatter = new Intl.DateTimeFormat('tr-TR', {
-        timeZone: 'Europe/Istanbul',
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-        hour: 'numeric',
-        minute: 'numeric',
-        second: 'numeric'
+    notificationListItem.init(config);
+    return { ...notificationListItem };
+};
+
+// ANCHOR: Notification Audio
+rss.notify = function () {
+    new Audio("notify.mp3").play();
+};
+
+// ANCHOR: Selected Button Update
+rss.selectedButtonUpdate = function () {
+    sourceListContent.querySelectorAll("#source-list-item").forEach((event, length) => {
+        if (event.source_url == rss.config.selectedSource) event.classList.add("selected");
     });
-
-    const turkishDate = formatter.format(date);
-    return turkishDate;
-
 }
 
+// ANCHOR: Source Write
+rss.sourceWrite = function (data) {
+    sourceListContent.innerHTML = "";
+    data.forEach((event, length) => {
+        sourceListContent.appendChild(
+            rss.sourceListItemCreate(
+                event.source_url,
+                event?.image?.url,
+                event.title,
+                function (element) {
+                    sourceListContent.querySelectorAll("#source-list-item").forEach((event, length) => event.classList.remove("selected"));
+                    element.classList.add("selected");
 
-document.getElementById("open-notification").onclick = function () {
-    document.getElementById("notification-container").classList.toggle("active");
+                    rss.config.selectedSource = element.source_url;
+
+                    feedListContent.innerHTML = "";
+                    rss.feedWrite(data, element["source_url"]);
+
+                }).element);
+    });
 };
 
 
-// Gönderildiği saati eklemek için formatlı bir tarih fonksiyonu kullanabiliriz
-function getFormattedTime() {
-    const now = new Date();
-    const hours = String(now.getHours()).padStart(2, '0');  // Saat
-    const minutes = String(now.getMinutes()).padStart(2, '0');  // Dakika
-    const seconds = String(now.getSeconds()).padStart(2, '0');  // Saniye
-    return `${hours}:${minutes}:${seconds}`;  // Saat:Dakika:Saniye formatında döner
+
+// ANCHOR: Feed Write
+rss.feedWrite = function (data, source_url) {
+    rss.tool.dateNewest(data).forEach((event, length) => {
+        if (event.source_url == source_url) {
+            event.items.forEach((e, len) => {
+                feedListContent.appendChild(
+                    rss.feedListItemCreate(
+                        e.title,
+                        e.content,
+                        rss.tool.elapsedTime(e.isoDate || e.pubDate),
+                        e.link || e.guid,
+                        "Haberi Aç"
+                    ).element);
+            });
+        }
+    });
 }
 
-function isValidUrl(url) {
-    const pattern = new RegExp('^(https?:\\/\\/)?.+', 'i');
-    return pattern.test(url);
+// ANCHOR: notification
+rss.notification = function (data) {
+    const currentData = data.map((event, length) => JSON.stringify(event.items));
+
+
+    if (JSON.stringify(rss.config.previousData[5]) == JSON.stringify(currentData[5])) {
+        console.log("Hala Aynı");
+    }else console.log("Veri Değişti");
 }
 
-document.addEventListener("visibilitychange", () => document.title = (document.hidden) ? "--Sayfa arka planda--":"RSS Live");
+// ANCHOR: Control
+rss.control = async function () {
+    // NOTE: DATA
+    await rss.api();
+    rss.config.previousData = rss.config.lastData.map((event, length) => JSON.stringify(event.items));;
+    const data = rss.config.lastData;
+
+    rss.sourceWrite(data);
+    rss.selectedButtonUpdate();
+
+    setInterval(async function () {
+        await rss.notification(await rss.api());
+    }, 10000);
+    rss.notification(data);
+};
+
+// ANCHOR: ROOT APP
+rss.app = function () {
+    rss.control();
+}
+
+// ANCHOR: RUN APP
+rss.app();
 
 
-window.onbeforeunload = function (event) {
-    event.returnValue = 'Sayfayı yenilerseniz, veriler kaybolabilir. Devam etmek istiyor musunuz?';
-    return 'Sayfayı yenilerseniz, veriler kaybolabilir. Devam etmek istiyor musunuz?';
+
+// ANCHOR: Notification Control Button
+notificationControButton.onclick = function () {
+    notificationList.classList.toggle("active");
 };

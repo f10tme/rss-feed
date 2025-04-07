@@ -52,7 +52,7 @@ body {
   background: #fff;
 }
 
-#rss-container #left-list {
+#rss-container #source-list {
   width: 20%;
   height: 100%;
   background: #ddd;
@@ -61,7 +61,7 @@ body {
   flex-direction: column;
 }
 
-#rss-container #left-list #left-list-content {
+#rss-container #source-list #source-list-content {
   display: flex;
   align-items: flex-start;
   justify-content: flex-start;
@@ -69,7 +69,7 @@ body {
   height: 100%;
 }
 
-#rss-container #left-list #left-list-content #list-item {
+#rss-container #source-list #source-list-content #source-list-item {
   display: flex;
   align-items: center;
   gap: 10px;
@@ -79,24 +79,28 @@ body {
   cursor: pointer;
 }
 
-#rss-container #left-list #left-list-content #list-item:hover {
+#rss-container #source-list #source-list-content #source-list-item:hover {
   background: #222;
-}
-
-#rss-container #left-list #left-list-content #list-item:hover button {
   color: #fff;
 }
 
-#rss-container #left-list #left-list-content #list-item button {
+#rss-container #source-list #source-list-content #source-list-item.selected {
+  background: #aaa;
+}
+
+#rss-container #source-list #source-list-content #source-list-item.notify {
+  background: #faaa;
+}
+
+#rss-container #source-list #source-list-content #source-list-item #source-name {
   background: none;
   box-sizing: border-box;
   padding: 10px;
   border: 0px;
   font-size: 1rem;
-  color: #000;
 }
 
-#rss-container #center-list {
+#rss-container #feed-list {
   width: 80%;
   height: 100%;
   background: #000;
@@ -105,12 +109,12 @@ body {
   overflow-y: auto;
 }
 
-#rss-container #center-list #head {
+#rss-container #feed-list #head {
   color: #fff;
   border-bottom: 1px solid #fff;
 }
 
-#rss-container #center-list #center-list-content {
+#rss-container #feed-list #feed-list-content {
   display: flex;
   justify-content: center;
   flex-direction: column;
@@ -118,12 +122,12 @@ body {
   padding: 5px;
 }
 
-#rss-container #center-list #center-list-content #image-box {
+#rss-container #feed-list #feed-list-content #image-box {
   width: 100%;
   height: 100px;
 }
 
-#rss-container #center-list #center-list-content #news-list-item {
+#rss-container #feed-list #feed-list-content #feed-list-item {
   padding: 10px;
   width: 100%;
   display: flex;
@@ -135,23 +139,23 @@ body {
   border-radius: 10px;
 }
 
-#rss-container #center-list #center-list-content #news-list-item img {
+#rss-container #feed-list #feed-list-content #feed-list-item img {
   max-width: 300px;
 }
 
-#rss-container #center-list #center-list-content #news-list-item #heading {
+#rss-container #feed-list #feed-list-content #feed-list-item #heading {
   font-weight: 500;
   font-size: 1.2rem;
   color: #fff;
 }
 
-#rss-container #center-list #center-list-content #news-list-item #pub-date {
+#rss-container #feed-list #feed-list-content #feed-list-item #pub-date {
   font-size: 1.1rem;
   font-weight: 900;
   color: #aaa;
 }
 
-#rss-container #center-list #center-list-content #news-list-item a {
+#rss-container #feed-list #feed-list-content #feed-list-item a {
   background: #ddd;
   color: #000;
   padding: 2px;
@@ -162,18 +166,18 @@ body {
   justify-content: center;
 }
 
-#rss-container #center-list #center-list-content #news-list-item a:hover {
+#rss-container #feed-list #feed-list-content #feed-list-item a:hover {
   opacity: 0.5;
 }
 
-#rss-container #center-list #center-list-content #news-list-item a#home-open-link {
+#rss-container #feed-list #feed-list-content #feed-list-item a#home-open-link {
   background: #9b6700;
   color: #fff;
   text-decoration: none;
   font-weight: 600;
 }
 
-#open-notification {
+#notification-control-button {
   background: #ffaa00;
   color: #fff;
   width: 100%;
@@ -183,11 +187,11 @@ body {
   transition: 0.3s;
 }
 
-#open-notification:hover {
+#notification-control-button:hover {
   background: #222;
 }
 
-#notification-container {
+#notification-list {
   position: fixed;
   top: 0px;
   right: 0px;
@@ -204,29 +208,29 @@ body {
   overflow: auto;
 }
 
-#notification-container #head {
+#notification-list #head {
   margin: 10px 0;
 }
 
-#notification-container #notification-list-content {
+#notification-list #notification-list-content {
   display: flex;
   flex-direction: column-reverse;
   gap: 5px;
 }
 
-#notification-container #date {
+#notification-list #date {
   padding: 5px;
   margin-top: 20px;
   font-size: 1.2rem;
 }
 
-#notification-container.active {
+#notification-list.active {
   opacity: 1;
   visibility: visible;
   transform: translateX(0%);
 }
 
-#notification-container #notify-item {
+#notification-list #notification-list-item {
   background: #ddd;
   color: #222;
   padding: 5px;
@@ -234,7 +238,7 @@ body {
   border: 1px solid #222;
 }
 
-#notification-container a {
+#notification-list a {
   display: block;
   padding: 5px;
   background: #222;
@@ -243,7 +247,7 @@ body {
   text-decoration: none;
 }
 
-#notification-container a:hover {
+#notification-list a:hover {
   background: #aaa;
   color: #222;
 }

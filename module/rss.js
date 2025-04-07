@@ -11,8 +11,12 @@ rss.parser = async function (rsssource) {
 
 rss.multiParser = async function (rsssource = rss.source) {
     let rssdata = [];
-    for (let i = 0;i < rsssource.length;i++) {
-        rssdata.push(await parser.parseURL(rsssource[i]));
+    for (let i = 0; i < rsssource.length; i++) {
+        const url = rsssource[i];
+        const parserData = await parser.parseURL(url);
+        parserData.source_url = url;
+        parserData.source_id = i + 1;
+        rssdata.push(parserData);
     }
     return rssdata;
 };

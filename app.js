@@ -9,8 +9,7 @@ rss.source = [
     "https://www.ahaber.com.tr/rss/video/dunya.xml",
     "https://www.star.com.tr/rss/rss.asp",
     "https://www.trthaber.com/sondakika.rss",
-    "https://feeds.bbci.co.uk/news/rss.xml",
-    "https://www.yenisafak.com/rss-feeds"
+    "https://feeds.bbci.co.uk/news/rss.xml"
 ].sort();
 
 
