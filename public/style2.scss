@@ -255,6 +255,9 @@ body {
     padding: 5px;
     border-radius: 10px;
     border: 1px solid $secondary-color;
+    &.active{
+        background: #f005;
+    }
     #share-time{
       font-size:1.2rem;
     }

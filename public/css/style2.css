@@ -243,6 +243,10 @@ body {
   border: 1px solid #222;
 }
 
+#notification-list #notification-list-item.active {
+  background: #f005;
+}
+
 #notification-list #notification-list-item #share-time {
   font-size: 1.2rem;
 }
@@ -267,4 +271,4 @@ body {
   color: #222;
 }
 
-/*# sourceMappingURL=style.css.map */
+/*# sourceMappingURL=style2.css.map */

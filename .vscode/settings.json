@@ -1,3 +1,8 @@
 {
-    "compile-hero.sass-output-directory": "./css"
+    "compile-hero.sass-output-directory": "./css",
+    "compile-hero.x-generate-minified-js": false,
+    "compile-hero.x-generate-sourcemap-js": false,
+    "compile-hero.x-omit-dev-ext-js": false,
+    "compile-hero.x-compile-files-on-save": true,
+    "compile-hero.javascript-output-toggle": false
 }
