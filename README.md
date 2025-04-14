@@ -25,4 +25,4 @@ A simple open-source RSS feed notifier that fetches and monitors your selected R
 `npm start`
 
 **Runs as administrator**
-`npm sudo`
+`npm run sudo`
