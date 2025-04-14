@@ -4,12 +4,12 @@ let app = new express();
 const port = 80;
 
 rss.source = [
-  "https://www.bursadabugun.com/rss/?feed=haberler",
-  "https://www.ensonhaber.com/rss/ensonhaber.xml",
   "https://onedio.com/Publisher/publisher-gundem.rss",
-  "https://www.haberturk.com/rss",
-  "https://www.ahaber.com.tr/rss/video/dunya.xml",
-  "https://www.star.com.tr/rss/rss.asp",
+  // "https://www.bursadabugun.com/rss/?feed=haberler",
+  // "https://www.ensonhaber.com/rss/ensonhaber.xml",
+  // "https://www.haberturk.com/rss",
+  // "https://www.ahaber.com.tr/rss/video/dunya.xml",
+  // "https://www.star.com.tr/rss/rss.asp",
   "https://www.trthaber.com/sondakika.rss",
   "https://feeds.bbci.co.uk/news/rss.xml",
 ].sort();
