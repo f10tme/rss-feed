@@ -25,6 +25,6 @@ app.get("/rss/manuel/", async function (req, res) {
 
 app.listen(port,() => {
   console.log(`\nhttp://localhost:${port}`);
-  console.log("\nVEYA\n");
+  console.log("\nOR\n");
   console.log(`http://127.0.0.1:${port}`);
 });

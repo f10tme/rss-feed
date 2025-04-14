@@ -5,7 +5,8 @@
   "type": "module",
   "main": "app.js",
   "scripts": {
-    "start": "clear && nodemon app.js",
+    "start": "clear && node app.js",
+    "sudo": "sudo npm start",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
