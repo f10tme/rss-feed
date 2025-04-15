@@ -92,8 +92,8 @@ rss.api = async function () {
 rss.sourceListItemCreate = function (info, image, sourceName, clickEvent) {
   const config = {
     info: info || "Başlık Bulunamadı",
-    image: image || "null-icon.png",
-    errorImage: "null-icon.png",
+    image: image || "images/null-icon.png",
+    errorImage: "images/null-icon.png",
     sourceName: sourceName || "<i>Tespit Edilemedi</i>",
     clickEvent:
       clickEvent ||
@@ -247,7 +247,7 @@ rss.notificationListItemCreate = function (shareTime, notificationData) {
 
 // ANCHOR: Notification Audio
 rss.notify = function () {
-  new Audio("notify.mp3").play();
+  new Audio("sound/notify.mp3").play();
 };
 
 // ANCHOR: Selected Button Update
