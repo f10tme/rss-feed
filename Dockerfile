@@ -1,4 +1,4 @@
-FROM node:20-alpine     # Vوالفقla node:22-alpine yapabilirsiniz
+FROM node:20-alpine
 WORKDIR /app
 COPY package*.json ./
 RUN npm install
