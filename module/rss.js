@@ -12,6 +12,8 @@ rss.parser = async function (rsssource) {
 rss.multiParser = async function (rsssource = rss.source) {
   let rssdata = [];
   for (let i = 0; i < rsssource.length; i++) {
+    try {
+      
     const url = rsssource[i];
     const parserData = await parser.parseURL(url);
     parserData.source_url = url;
@@ -22,6 +24,9 @@ rss.multiParser = async function (rsssource = rss.source) {
       return dateB - dateA;
     });
     rssdata.push(parserData);
+    }catch(error){
+      console.log("@RSS-SOURCE-ERROR:",error);
+    }
   }
   return rssdata;
 };
