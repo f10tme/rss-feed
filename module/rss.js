@@ -24,8 +24,7 @@ rss.multiParser = async function (rsssource = rss.source) {
       });
       rssdata.push(parserData);
     }catch(error){
-      console.log("@PARSER-DATA-ERROR: ",parserData);
-      console.log("@RSS-SOURCE-ERROR:",error);
+      console.log(`@RSS-SOURCE-ERROR[${rsssource[i]}]:`,error);
     }
   }
   return rssdata;
