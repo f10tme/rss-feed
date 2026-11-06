@@ -3,16 +3,16 @@ import rss from "./module/rss.js";
 let app = new express();
 const port = process.env.PORT || 5000;
 
-rss.source = [
+rss.source = (process.env.RSS_SOURCES ? process.env.RSS_SOURCES.split(",").map((url) => url.trim()) : 
+[
   "https://onedio.com/Publisher/publisher-gundem.rss",
   "https://www.bursadabugun.com/rss/?feed=haberler",
-  "https://www.ensonhaber.com/rss/ensonhaber.xml",
   "https://www.haberturk.com/rss",
   "https://www.ahaber.com.tr/rss/video/dunya.xml",
   "https://www.star.com.tr/rss/rss.asp",
   "https://www.trthaber.com/sondakika.rss",
   "https://feeds.bbci.co.uk/news/rss.xml",
-].sort();
+]).sort();
 
 app.use(express.static("public"));
 app.get("/rss/full", async function (req, res) {
