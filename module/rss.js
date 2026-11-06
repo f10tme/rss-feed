@@ -15,7 +15,6 @@ rss.multiParser = async function (rsssource = rss.source) {
     try {
       const url = rsssource[i];
       const parserData = await parser.parseURL(url);
-      console.log("@PARSER-DATA-ERROR: ",parserData);
       parserData.source_url = url;
       parserData.source_id = i + 1;
       parserData.items.sort((a, b) => {
@@ -25,6 +24,7 @@ rss.multiParser = async function (rsssource = rss.source) {
       });
       rssdata.push(parserData);
     }catch(error){
+      console.log("@PARSER-DATA-ERROR: ",parserData);
       console.log("@RSS-SOURCE-ERROR:",error);
     }
   }
