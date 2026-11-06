@@ -1,7 +1,7 @@
 import express from "express";
 import rss from "./module/rss.js";
 let app = new express();
-const port = 80;
+const port = proccess.env.PORT || 3000;
 
 rss.source = [
   "https://onedio.com/Publisher/publisher-gundem.rss",
